@@ -3,6 +3,14 @@ let currentTheme = localStorage.getItem("theme") || "dark"
 let isLoading = false
 let currentResults = null
 
+// --- HELPER FUNCTION (Moved to global scope so everyone can see it) ---
+const toBase64 = file => new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = error => reject(error);
+});
+
 // Initialize
 document.addEventListener("DOMContentLoaded", () => {
   initTheme()
@@ -103,40 +111,62 @@ async function handleFile(file) {
   }
 
   const fileType = isImage ? "image" : "video"
+  
+  // FIX: Actually call the submit function now!
   await submitFile(file, fileType)
 }
 
 async function submitFile(file, fileType) {
-  isLoading = true
-  setLoadingState(true)
-  clearContainers()
+    isLoading = true
+    setLoadingState(true)
+    clearContainers()
 
-  try {
-    const formData = new FormData()
-    formData.append("file", file)
+    try {
+        const baseUrl = "https://salil-ind-fake-buster.hf.space/api" 
+        let response;
 
-    const baseUrl = "https://salil-ind-fake-buster.hf.space/api"
-    const endpoint = fileType === "image" ? `${baseUrl}/detect-image` : `${baseUrl}/detect-video`
+        // --- LOGIC FOR IMAGES (Send as JSON Base64) ---
+        if (fileType === "image") {
+            const base64String = await toBase64(file);
+            
+            response = await fetch(`${baseUrl}/analyze/image`, {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ image: base64String })
+            })
+        } 
+        
+        // --- LOGIC FOR VIDEOS (Send as FormData) ---
+        else {
+            const formData = new FormData()
+            // Backend app.py specifically looks for 'video' in request.files['video']
+            formData.append("video", file) 
 
-    const response = await fetch(endpoint, {
-      method: "POST",
-      body: formData,
-    })
+            response = await fetch(`${baseUrl}/analyze/video`, {
+                method: "POST",
+                body: formData,
+            })
+        }
 
-    if (!response.ok) {
-      throw new Error(`API error: ${response.statusText}`)
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || `API error: ${response.statusText}`)
+        }
+
+        const data = await response.json()
+        currentResults = { ...data, fileType, fileName: file.name }
+        displayResults(currentResults)
+
+    } catch (err) {
+        console.error(err);
+        displayError(err.message || "An error occurred")
+    } finally {
+        isLoading = false
+        setLoadingState(false)
     }
-
-    const data = await response.json()
-    currentResults = { ...data, fileType, fileName: file.name }
-    displayResults(currentResults)
-  } catch (err) {
-    displayError(err.message || "An error occurred")
-  } finally {
-    isLoading = false
-    setLoadingState(false)
   }
-}
 
 function setLoadingState(loading) {
   const uploader = document.getElementById("file-uploader")
@@ -241,7 +271,7 @@ function displayResults(results) {
                     <circle cx="12" cy="12" r="10"></circle>
                     <polyline points="12 6 12 12 16 14"></polyline>
                 </svg>
-                <span>${new Date(timestamp).toLocaleString()}</span>
+                <span>${new Date().toLocaleString()}</span>
                 ${!isImage && total_duration ? `<span class="duration">Duration: ${total_duration.toFixed(2)}s</span>` : ""}
             </div>
         </div>
@@ -299,7 +329,7 @@ function generateTimelineHtml(segments, totalDuration) {
 
       return `
             <div class="timeline-segment" style="left: ${startPercent}%; width: ${width}%;" 
-                 title="${segment.label}: ${segment.start_time.toFixed(2)}s - ${segment.end_time.toFixed(2)}s"></div>
+                 title="${segment.label}: ${segment.start_time} - ${segment.end_time}"></div>
         `
     })
     .join("")
@@ -310,14 +340,12 @@ function generateTimelineHtml(segments, totalDuration) {
         <div class="segment-item">
             <div class="segment-item-header">
                 <div>
-                    <p class="segment-item-label">${escapeHtml(segment.label)}</p>
+                    <p class="segment-item-label">${escapeHtml(segment.label || 'Fake Segment')}</p>
                     <p class="segment-timing">
-                        ${segment.start_time.toFixed(2)}s - ${segment.end_time.toFixed(2)}s
-                        <span> · </span>
-                        Duration: ${(segment.end_time - segment.start_time).toFixed(2)}s
+                        ${segment.start_time} - ${segment.end_time}
                     </p>
                 </div>
-                <div class="segment-confidence">${(segment.confidence * 100).toFixed(1)}%</div>
+                <div class="segment-confidence">${(segment.confidence).toFixed(1)}%</div>
             </div>
         </div>
     `,
@@ -352,6 +380,7 @@ function generateTimelineHtml(segments, totalDuration) {
 }
 
 function escapeHtml(text) {
+  if (!text) return "";
   const map = {
     "&": "&amp;",
     "<": "&lt;",
