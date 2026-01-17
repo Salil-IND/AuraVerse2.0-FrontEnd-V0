@@ -115,7 +115,7 @@ async function submitFile(file, fileType) {
     const formData = new FormData()
     formData.append("file", file)
 
-    const baseUrl = "http://127.0.0.1:8000/api/v1"
+    const baseUrl = "https://salil-ind-fake-buster.hf.space/api"
     const endpoint = fileType === "image" ? `${baseUrl}/detect-image` : `${baseUrl}/detect-video`
 
     const response = await fetch(endpoint, {
