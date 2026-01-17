@@ -20,7 +20,10 @@ export default function Home() {
       const formData = new FormData()
       formData.append("file", file)
 
-      const endpoint = fileType === "image" ? "/detect-image" : "/detect-video"
+      // FIX: Point to the Python Backend URL
+      const baseUrl = "http://127.0.0.1:8000/api/v1"; 
+      const endpoint = fileType === "image" ? `${baseUrl}/detect-image` : `${baseUrl}/detect-video`;
+
       const response = await fetch(endpoint, {
         method: "POST",
         body: formData,

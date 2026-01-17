@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en" id="html-root">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DeepfakeDetector - AI-Powered Authenticity Verification</title>
+    <meta name="description" content="Advanced deepfake detection using state-of-the-art AI. Analyze images and videos for authenticity.">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-container">
+                <div class="header-left">
+                    <div class="logo">D</div>
+                    <h1 class="logo-text">DeepfakeDetector</h1>
+                </div>
+                <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
+                    <!-- Icon will be injected by JS -->
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Hero Section -->
+            <section class="hero">
+                <h2 class="hero-title">Verify Media Authenticity</h2>
+                <p class="hero-subtitle">Advanced AI-powered detection system for identifying deepfakes and synthetic media with precision confidence scores.</p>
+            </section>
+
+            <div class="container">
+                <!-- File Uploader -->
+                <div class="uploader-section">
+                    <div class="uploader-wrapper">
+                        <div id="file-uploader" class="file-uploader" ondragenter="handleDragEnter(event)" ondragleave="handleDragLeave(event)" ondragover="handleDragOver(event)" ondrop="handleDrop(event)">
+                            <input type="file" id="file-input" accept="image/*,video/*" class="hidden-input" />
+                            <div class="uploader-content">
+                                <div class="uploader-icon">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                        <polyline points="17 8 12 3 7 8"></polyline>
+                                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                                    </svg>
+                                </div>
+                                <h3 class="uploader-title">Upload Media</h3>
+                                <p class="uploader-text">Drag and drop your image or video here, or click to browse</p>
+                                <p class="uploader-hint">Supported: JPG, PNG, MP4, MOV, etc.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Results Section -->
+                <div class="results-section">
+                    <div id="error-container"></div>
+                    <div id="loading-container"></div>
+                    <div id="results-container"></div>
+                    <div id="placeholder-container" class="placeholder">
+                        <p class="placeholder-title">Upload an image or video to get started</p>
+                        <p class="placeholder-text">Results will appear here with detailed analysis</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p class="footer-text">DeepfakeDetector uses advanced AI models to detect manipulated media. Always use as one part of media verification.</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
